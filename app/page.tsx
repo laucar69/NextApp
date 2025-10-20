@@ -14,6 +14,35 @@ export default function Home() {
   })
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
   const [formMessage, setFormMessage] = useState('')
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  const galleryImages = [
+    { src: '/img/galerie/k2.png', alt: 'Krone 23.03.2024' },
+    { src: '/img/galerie/k4.png', alt: 'Krone 23.03.2024' },
+    { src: '/img/galerie/k1.png', alt: 'Krone 23.03.2024' },
+    { src: '/img/galerie/k3.png', alt: 'Krone 23.03.2024' },
+    { src: '/img/galerie/s6.png', alt: 'Alte Schlosserei 27.04.2024' },
+    { src: '/img/galerie/s2.png', alt: 'Alte Schlosserei 27.04.2024' },
+    { src: '/img/galerie/s3.png', alt: 'Alte Schlosserei 27.04.2024' },
+    { src: '/img/galerie/s5.png', alt: 'Alte Schlosserei 27.04.2024' },
+    { src: '/img/galerie/s1.png', alt: 'Alte Schlosserei 27.04.2024' },
+    { src: '/img/galerie/s7.png', alt: 'Alte Schlosserei 27.04.2024' },
+    { src: '/img/galerie/v1.jpg', alt: 'Café Verkehrt 30.11.2024' },
+    { src: '/img/galerie/v2.jpg', alt: 'Café Verkehrt 30.11.2024' },
+    { src: '/img/galerie/v3.jpg', alt: 'Café Verkehrt 30.11.2024' }
+  ]
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % galleryImages.length)
+  }
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + galleryImages.length) % galleryImages.length)
+  }
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -322,19 +351,35 @@ export default function Home() {
           </div>
 
           <div className="gallery">
-            <Image src="/img/galerie/k2.png" alt="Krone 23.03.2024" width={250} height={250} />
-            <Image src="/img/galerie/k4.png" alt="Krone 23.03.2024" width={250} height={250} />
-            <Image src="/img/galerie/k1.png" alt="Krone 23.03.2024" width={250} height={250} />
-            <Image src="/img/galerie/k3.png" alt="Krone 23.03.2024" width={250} height={250} />
-            <Image src="/img/galerie/s6.png" alt="Alte Schlosserei 27.04.2024" width={250} height={250} />
-            <Image src="/img/galerie/s2.png" alt="Alte Schlosserei 27.04.2024" width={250} height={250} />
-            <Image src="/img/galerie/s3.png" alt="Alte Schlosserei 27.04.2024" width={250} height={250} />
-            <Image src="/img/galerie/s5.png" alt="Alte Schlosserei 27.04.2024" width={250} height={250} />
-            <Image src="/img/galerie/s1.png" alt="Alte Schlosserei 27.04.2024" width={250} height={250} />
-            <Image src="/img/galerie/s7.png" alt="Alte Schlosserei 27.04.2024" width={250} height={250} />
-            <Image src="/img/galerie/v1.jpg" alt="Café Verkehrt 30.11.2024" width={250} height={250} />
-            <Image src="/img/galerie/v2.jpg" alt="Café Verkehrt 30.11.2024" width={250} height={250} />
-            <Image src="/img/galerie/v3.jpg" alt="Café Verkehrt 30.11.2024" width={250} height={250} />
+            <button className="gallery-nav prev" onClick={prevSlide} aria-label="Previous slide">
+              ‹
+            </button>
+            <div className="gallery-slider" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+              {galleryImages.map((image, index) => (
+                <div key={index} className="gallery-slide">
+                  <Image 
+                    src={image.src} 
+                    alt={image.alt} 
+                    width={800} 
+                    height={600}
+                    style={{ maxWidth: '100%', height: 'auto' }}
+                  />
+                </div>
+              ))}
+            </div>
+            <button className="gallery-nav next" onClick={nextSlide} aria-label="Next slide">
+              ›
+            </button>
+            <div className="gallery-controls">
+              {galleryImages.map((_, index) => (
+                <button
+                  key={index}
+                  className={`gallery-dot ${index === currentSlide ? 'active' : ''}`}
+                  onClick={() => goToSlide(index)}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
