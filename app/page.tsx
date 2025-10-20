@@ -1,7 +1,6 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
 import { useState } from 'react'
 
 export default function Home() {
@@ -44,7 +43,7 @@ export default function Home() {
         setFormStatus('error')
         setFormMessage('Es gab ein Problem beim Senden der Nachricht. Bitte versuche es später erneut.')
       }
-    } catch (error) {
+    } catch {
       setFormStatus('error')
       setFormMessage('Es gab ein Problem beim Senden der Nachricht. Bitte versuche es später erneut.')
     }
@@ -99,7 +98,7 @@ export default function Home() {
         <div className="container">
           <h3>Roadhouse - the band</h3>
           <p className="subheader">.... sind fünf Jungs aus dem Wiesental, die guten alten klassischen Hardrock spielen. Handgemacht, heftig, deftig und vor allem mit viel Herzblut.</p>
-          <p className="subheader">Freut euch auf Roadhouse Live '25 ... wir rocken das!</p>
+          <p className="subheader">Freut euch auf Roadhouse Live &apos;25 ... wir rocken das!</p>
 
           <div style={{ marginTop: '40px' }}>
             <h4>News</h4>
@@ -118,7 +117,7 @@ export default function Home() {
           <div className="band-member">
             <div className="band-member-content">
               <p>
-                Wir schreiben das Jahr 1992, als vier junge Musiker zwischen 19 und 24 ihre hoffnungsvolle Bandkarriere starten. Zunächst nannte sich die Band nach einer Mischung aus Lieblingsgetränk und Lieblingsfilm "Rothouse", dies war aber nur eine kurze, längst vergessene Phase. Die Jungs schrieben einige Songs selbst und nahmen ein paar Coverversionen dazu, um ein einziges legendäres Konzert in der Realschule in Zell zu spielen. Bald darauf verstreuten sich die Buben in alle Winde und Bands.
+                Wir schreiben das Jahr 1992, als vier junge Musiker zwischen 19 und 24 ihre hoffnungsvolle Bandkarriere starten. Zunächst nannte sich die Band nach einer Mischung aus Lieblingsgetränk und Lieblingsfilm &quot;Rothouse&quot;, dies war aber nur eine kurze, längst vergessene Phase. Die Jungs schrieben einige Songs selbst und nahmen ein paar Coverversionen dazu, um ein einziges legendäres Konzert in der Realschule in Zell zu spielen. Bald darauf verstreuten sich die Buben in alle Winde und Bands.
               </p>
               <p>
                 Nach 28 Jahren schöpferischer Pause und Vorbereitung gab es das grosse Comeback, und die Band war nun endlich musikalisch da, wo sie schon früher gerne gewesene wäre ... gereift, besser, lauter ;-)
@@ -148,7 +147,7 @@ export default function Home() {
                 In der ersten Phase von Roadhouse versuchte sich Niels dann erstmals als Sänger. 1994 zog es ihn dann, zusammen mit Stephan, zur Hard-Rock-Funk-Band ALICE IN VOODOOLAND.
               </p>
               <p>
-                Nach einer künstlerischen Pause und kleinen Gastauftritten in verschiedenen Bands und Musikstilen, trat er dann 1999 der Formation SHAKE "S", einer Rock-Soul-Funk Formation bei. Nach deren Auflösung war er Mitbegründer der DAMPFKAPELLE.
+                Nach einer künstlerischen Pause und kleinen Gastauftritten in verschiedenen Bands und Musikstilen, trat er dann 1999 der Formation SHAKE &quot;S&quot;, einer Rock-Soul-Funk Formation bei. Nach deren Auflösung war er Mitbegründer der DAMPFKAPELLE.
               </p>
             </div>
           </div>
@@ -217,13 +216,13 @@ export default function Home() {
                 Nico ist der Jüngste in der Truppe - auch wenn er nach eigenen Angaben den ältesten Musikgeschmack hat.
               </p>
               <p>
-                1988 zerklopfte er im Alter von drei Jahren mit den Drumsticks aus der Band seines Vaters zu Hause die Salatschüsseln und bekam deswegen mit vier sein erstes Schlagzeug. Ab da war die Richtung klar. Zu Platten der Beatles (White Album und Sgt. Pepper's) brachte er sich das Schlagzeugspielen selbst bei und später (wegen der Unfähigkeit des Gitarristen in der ersten Schülerband) zu Songs von Deep Purple und Pink Floyd auch das Gitarrenspiel.
+                1988 zerklopfte er im Alter von drei Jahren mit den Drumsticks aus der Band seines Vaters zu Hause die Salatschüsseln und bekam deswegen mit vier sein erstes Schlagzeug. Ab da war die Richtung klar. Zu Platten der Beatles (White Album und Sgt. Pepper&apos;s) brachte er sich das Schlagzeugspielen selbst bei und später (wegen der Unfähigkeit des Gitarristen in der ersten Schülerband) zu Songs von Deep Purple und Pink Floyd auch das Gitarrenspiel.
               </p>
               <p>
-                Er trommelte danach in den Jugendbands „Gicht" (Metal) und „Joyous Daze" (Alternative Rock) und spielte in Markus Götz' Bigband und im „Groove Orchestra" Gitarre, bevor er am Schlagzeug bei Mario Stracuzzis „Marionettes" (damals noch „X-Cover") anfing und in mehreren Projekt-Bands mitwirkte.
+                Er trommelte danach in den Jugendbands &quot;Gicht&quot; (Metal) und &quot;Joyous Daze&quot; (Alternative Rock) und spielte in Markus Götz&apos; Bigband und im &quot;Groove Orchestra&quot; Gitarre, bevor er am Schlagzeug bei Mario Stracuzzis &quot;Marionettes&quot; (damals noch &quot;X-Cover&quot;) anfing und in mehreren Projekt-Bands mitwirkte.
               </p>
               <p>
-                Später gründete er die Metal-Band „Thunderer" mit, deren Gitarrist und Sänger er heute noch ist. Den Bass hatte er bis dahin eigentlich nur sporadisch in der Hand - bis er die Herausforderung bei Roadhouse annahm.
+                Später gründete er die Metal-Band &quot;Thunderer&quot; mit, deren Gitarrist und Sänger er heute noch ist. Den Bass hatte er bis dahin eigentlich nur sporadisch in der Hand - bis er die Herausforderung bei Roadhouse annahm.
               </p>
               <p>
                 Seine musikalischen Vorbilder sind Ringo Starr, Ian Paice, David Gilmour, Tony Iommy, Roger Waters (für Bassfreunde) und Berndt Mühlbach von der Dampfkapelle.
@@ -237,7 +236,7 @@ export default function Home() {
             <div className="band-member-content">
               <h4>Dirk Buchleither: Bass</h4>
               <p>
-                Dirk begann seine musikalische Karriere 1991. Er wurde von seinem Freund Niels Ole mit den Worten "Hey Buchi, mir hän ä Band aber s'fehlt no de Bassischd" angesprochen. Tags drauf besorgte man einen günstigen Bass samt Verstärker und los ging's. Der erste Song war <span style={{ fontStyle: 'italic' }}>Sharp Dressed Man</span> von ZZ Top und kurze Zeit später wurde aus der Gruppierung Roadhouse.
+                Dirk begann seine musikalische Karriere 1991. Er wurde von seinem Freund Niels Ole mit den Worten &quot;Hey Buchi, mir hän ä Band aber s&apos;fehlt no de Bassischd&quot; angesprochen. Tags drauf besorgte man einen günstigen Bass samt Verstärker und los ging&apos;s. Der erste Song war <span style={{ fontStyle: 'italic' }}>Sharp Dressed Man</span> von ZZ Top und kurze Zeit später wurde aus der Gruppierung Roadhouse.
               </p>
               <p>
                 Dirks musikalische Vorlieben sind genauso vielfältig wie die Erfahrungen, die er in verschiedensten Bands und Stilistiken sammeln durfte. So zupfte er die Saiten bei ALICE IN VOODOOLAND, der AMH-BAND und RAT SALAD aus Konstanz, RUMPLETEAZER aus Heddesheim, LOUNGEFLY aus Karlsruhe, KÜNSTLERPECH aus Rheinfelden und zuletzt bei DOUBLE VISION.
