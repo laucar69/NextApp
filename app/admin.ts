@@ -6,6 +6,15 @@ import type { SectionItem, SectionModuleItem } from './global'
 import type { AvailableModuleItem } from './modules'
 
 const DEFAULT_PAGE_ID = 0
+const CONTENT_IMAGES_PREFIX = '/assets/content/images/'
+const DEFAULT_IMAGE_MODULE_SRC = '/assets/admin/noimg.jpg'
+
+export type ContentImageEntry = {
+  name: string
+  path: string
+  type: 'folder' | 'image'
+  src?: string
+}
 
 export function useAdminController() {
   const [sections, setSections] = useState<SectionItem[]>([])
@@ -19,6 +28,12 @@ export function useAdminController() {
   const [editingHeadlineModuleId, setEditingHeadlineModuleId] = useState<string | null>(null)
   const [headlineModuleDraft, setHeadlineModuleDraft] = useState('')
   const [headlineModuleTypeDraft, setHeadlineModuleTypeDraft] = useState<'h1' | 'h2' | 'h3'>('h2')
+  const [editingImageModuleId, setEditingImageModuleId] = useState<string | null>(null)
+  const [imageModuleDraft, setImageModuleDraft] = useState(DEFAULT_IMAGE_MODULE_SRC)
+  const [imageBrowserPath, setImageBrowserPath] = useState('')
+  const [imageBrowserParentPath, setImageBrowserParentPath] = useState<string | null>(null)
+  const [imageBrowserEntries, setImageBrowserEntries] = useState<ContentImageEntry[]>([])
+  const [isLoadingImageBrowser, setIsLoadingImageBrowser] = useState(false)
   const [editingTextModuleId, setEditingTextModuleId] = useState<string | null>(null)
   const [textModuleDraft, setTextModuleDraft] = useState('<p></p>')
   const [configuringModuleId, setConfiguringModuleId] = useState<string | null>(null)
@@ -812,11 +827,43 @@ export function useAdminController() {
     setModuleOffsetDraft('')
   }, [])
 
+  const loadImageBrowserEntries = useCallback(async (nextPath = '') => {
+    setIsLoadingImageBrowser(true)
+
+    try {
+      const response = await fetch(`/api/content-images?path=${encodeURIComponent(nextPath)}`, {
+        method: 'GET',
+        cache: 'no-store',
+      })
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Bildordner konnte nicht geladen werden.')
+      }
+
+      setImageBrowserPath(result.currentPath ?? '')
+      setImageBrowserParentPath(result.parentPath ?? null)
+      setImageBrowserEntries(result.entries ?? [])
+    } catch (error) {
+      console.error(error)
+      setImageBrowserPath('')
+      setImageBrowserParentPath(null)
+      setImageBrowserEntries([])
+    } finally {
+      setIsLoadingImageBrowser(false)
+    }
+  }, [])
+
   const handleStartEditingHeadlineModule = useCallback((module: SectionModuleItem) => {
     if (module.modulname !== 'headline-module') {
       return
     }
 
+    setEditingImageModuleId(null)
+    setImageBrowserEntries([])
+    setImageBrowserParentPath(null)
+    setImageBrowserPath('')
+    setImageModuleDraft(DEFAULT_IMAGE_MODULE_SRC)
     setEditingTextModuleId(null)
     setTextModuleDraft('<p></p>')
     setEditingHeadlineModuleId(module._id)
@@ -834,11 +881,54 @@ export function useAdminController() {
     setHeadlineModuleTypeDraft('h2')
   }, [])
 
+  const handleStartEditingImageModule = useCallback(
+    (module: SectionModuleItem) => {
+      if (module.modulname !== 'image-module') {
+        return
+      }
+
+      const currentSrc =
+        module.content && 'src' in module.content
+          ? module.content.src
+          : DEFAULT_IMAGE_MODULE_SRC
+      const relativeImagePath = currentSrc.startsWith(CONTENT_IMAGES_PREFIX)
+        ? currentSrc.slice(CONTENT_IMAGES_PREFIX.length)
+        : ''
+      const initialFolderPath = relativeImagePath.includes('/')
+        ? relativeImagePath.split('/').slice(0, -1).join('/')
+        : ''
+
+      setEditingHeadlineModuleId(null)
+      setHeadlineModuleDraft('')
+      setHeadlineModuleTypeDraft('h2')
+      setEditingTextModuleId(null)
+      setTextModuleDraft('<p></p>')
+      setEditingImageModuleId(module._id)
+      setImageModuleDraft(currentSrc)
+      void loadImageBrowserEntries(initialFolderPath)
+    },
+    [loadImageBrowserEntries]
+  )
+
+  const handleCancelEditingImageModule = useCallback(() => {
+    setEditingImageModuleId(null)
+    setImageModuleDraft(DEFAULT_IMAGE_MODULE_SRC)
+    setImageBrowserPath('')
+    setImageBrowserParentPath(null)
+    setImageBrowserEntries([])
+    setIsLoadingImageBrowser(false)
+  }, [])
+
   const handleStartEditingTextModule = useCallback((module: SectionModuleItem) => {
     if (module.modulname !== 'text-module') {
       return
     }
 
+    setEditingImageModuleId(null)
+    setImageBrowserEntries([])
+    setImageBrowserParentPath(null)
+    setImageBrowserPath('')
+    setImageModuleDraft(DEFAULT_IMAGE_MODULE_SRC)
     setEditingHeadlineModuleId(null)
     setHeadlineModuleDraft('')
     setEditingTextModuleId(module._id)
@@ -859,11 +949,16 @@ export function useAdminController() {
         return
       }
 
+      if (module.modulname === 'image-module') {
+        handleStartEditingImageModule(module)
+        return
+      }
+
       if (module.modulname === 'text-module') {
         handleStartEditingTextModule(module)
       }
     },
-    [handleStartEditingHeadlineModule, handleStartEditingTextModule]
+    [handleStartEditingHeadlineModule, handleStartEditingImageModule, handleStartEditingTextModule]
   )
 
   const handleSaveHeadlineModule = useCallback(
@@ -1024,6 +1119,95 @@ export function useAdminController() {
       }
     },
     [handleCancelEditingTextModule, loadSections, sections, textModuleDraft]
+  )
+
+  const handleSelectImageModuleDraft = useCallback((src: string) => {
+    setImageModuleDraft(src)
+  }, [])
+
+  const handleOpenImageBrowserFolder = useCallback(
+    (nextPath: string) => {
+      void loadImageBrowserEntries(nextPath)
+    },
+    [loadImageBrowserEntries]
+  )
+
+  const handleSaveImageModule = useCallback(
+    async (moduleId: string) => {
+      const nextSrc = imageModuleDraft.trim()
+
+      if (!nextSrc.startsWith(CONTENT_IMAGES_PREFIX)) {
+        return
+      }
+
+      const currentModule = sections
+        .flatMap((section) => section.modules)
+        .find((module) => module._id === moduleId && module.modulname === 'image-module')
+
+      if (!currentModule) {
+        handleCancelEditingImageModule()
+        return
+      }
+
+      setSections((currentSections) =>
+        currentSections.map((section) => ({
+          ...section,
+          modules: section.modules.map((module) =>
+            module._id === moduleId
+              ? {
+                  ...module,
+                  content: module.content
+                    ? 'src' in module.content
+                      ? { ...module.content, src: nextSrc }
+                      : module.content
+                    : {
+                        _id: module.content_id ?? '',
+                        src: nextSrc,
+                        alt: 'Bild',
+                      },
+                }
+              : module
+          ),
+        }))
+      )
+      handleCancelEditingImageModule()
+
+      try {
+        const response = await fetch(`/api/modules/${moduleId}/content`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            src: nextSrc,
+          }),
+        })
+        const result = await response.json()
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Bild-Modul konnte nicht gespeichert werden.')
+        }
+
+        setSections((currentSections) =>
+          currentSections.map((section) => ({
+            ...section,
+            modules: section.modules.map((module) =>
+              module._id === moduleId
+                ? {
+                    ...module,
+                    content_id: result.content?._id ?? module.content_id ?? null,
+                    content: result.content ?? module.content ?? null,
+                  }
+                : module
+            ),
+          }))
+        )
+      } catch (error) {
+        console.error(error)
+        await loadSections()
+      }
+    },
+    [handleCancelEditingImageModule, imageModuleDraft, loadSections, sections]
   )
 
   const handleSaveModuleConfig = useCallback(
@@ -1209,7 +1393,13 @@ export function useAdminController() {
     configuringModuleId,
     dragPreviewPosition,
     editingHeadlineModuleId,
+    editingImageModuleId,
     headlineModuleTypeDraft,
+    imageBrowserEntries,
+    imageBrowserParentPath,
+    imageBrowserPath,
+    imageModuleDraft,
+    isLoadingImageBrowser,
     moduleOffsetDraft,
     moduleWidthDraft,
     editingTextModuleId,
@@ -1224,8 +1414,11 @@ export function useAdminController() {
     handleAddSection,
     handleConfirmRemoveSection,
     handleCloseModuleConfig,
+    handleCancelEditingImageModule,
     handleInsertSectionAfter,
+    handleOpenImageBrowserFolder,
     handleOpenModuleConfig,
+    handleSaveImageModule,
     handleStartEditingModule,
     handleModulePointerDragStart,
     handlePointerDragStart,
@@ -1234,8 +1427,10 @@ export function useAdminController() {
     handleSaveHeadlineModule,
     handleSaveModuleConfig,
     handleSaveTextModule,
+    handleSelectImageModuleDraft,
     handleSectionModulePointerDragStart,
     handleStartEditingHeadlineModule,
+    handleStartEditingImageModule,
     handleStartEditingTextModule,
     handleRemoveModule,
     handleSectionModuleDragEnd,
@@ -1250,6 +1445,7 @@ export function useAdminController() {
     setEditingSectionId,
     setHeadlineModuleTypeDraft,
     setHeadlineModuleDraft,
+    setImageModuleDraft,
     setModuleOffsetDraft,
     setModuleWidthDraft,
     setTextModuleDraft,

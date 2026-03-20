@@ -9,6 +9,12 @@ export type TextModuleContentItem = {
   markup: string
 }
 
+export type ImageModuleContentItem = {
+  _id: string
+  src: string
+  alt: string
+}
+
 export type SectionModuleItem = {
   _id: string
   section_id: string
@@ -17,7 +23,7 @@ export type SectionModuleItem = {
   bootstrap_width?: 'col-md-12' | 'col-md-8' | 'col-md-6' | 'col-md-4' | 'col-md-3'
   bootstrap_offset?: '' | 'offset-md-1' | 'offset-md-2'
   content_id?: string | null
-  content?: HeadlineModuleContentItem | TextModuleContentItem | null
+  content?: HeadlineModuleContentItem | TextModuleContentItem | ImageModuleContentItem | null
 }
 
 export type SectionItem = {

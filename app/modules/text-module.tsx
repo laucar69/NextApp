@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ClipboardEvent, MouseEventHandler, ReactNode } from 'react'
 
 type TextModuleProps = {
@@ -25,6 +25,7 @@ export function TextModule({
   onSaveDraft,
 }: TextModuleProps) {
   const editorRef = useRef<HTMLDivElement | null>(null)
+  const [isCodeView, setIsCodeView] = useState(false)
   const normalizedMarkup = markup.trim()
   const hasVisibleContent =
     normalizedMarkup !== '' &&
@@ -42,6 +43,12 @@ export function TextModule({
       editorRef.current.innerHTML = draftMarkup
     }
   }, [draftMarkup, isEditing])
+
+  useEffect(() => {
+    if (!isEditing) {
+      setIsCodeView(false)
+    }
+  }, [isEditing])
 
   function applyCommand(command: 'bold' | 'italic' | 'insertOrderedList' | 'insertUnorderedList') {
     editorRef.current?.focus()
@@ -135,6 +142,14 @@ export function TextModule({
     insertHtmlAtCursor(normalizedText ? `<p>${normalizedText}</p>` : '<p></p>')
   }
 
+  function handleToggleCodeView() {
+    if (!isCodeView && editorRef.current) {
+      onDraftChange?.(editorRef.current.innerHTML || draftMarkup)
+    }
+
+    setIsCodeView((currentValue) => !currentValue)
+  }
+
   return (
     <div
       className={`col-12 module__card module__card--admin ${className}`.trim()}
@@ -153,6 +168,17 @@ export function TextModule({
               <option value="h2">Ueberschrift 2</option>
               <option value="h3">Ueberschrift 3</option>
             </select>
+            <button
+              type="button"
+              className="module__rte-button"
+              aria-label="HTML-Code Ansicht"
+              title="HTML-Code Ansicht"
+              onClick={handleToggleCodeView}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m8.7 16.6-1.4 1.4L1.3 12l6-6 1.4 1.4L4.1 12l4.6 4.6zm6.6 0L19.9 12l-4.6-4.6L16.7 6l6 6-6 6-1.4-1.4zM13.9 4l-3.2 16h-2.1l3.2-16h2.1z" />
+              </svg>
+            </button>
             <button
               type="button"
               className="module__rte-button"
@@ -209,14 +235,22 @@ export function TextModule({
               </svg>
             </button>
           </div>
-          <div
-            ref={editorRef}
-            className="module__rte-editor"
-            contentEditable
-            suppressContentEditableWarning
-            onInput={(event) => onDraftChange?.(event.currentTarget.innerHTML)}
-            onPaste={handlePaste}
-          />
+          {isCodeView ? (
+            <textarea
+              className="module__rte-code-input"
+              value={draftMarkup}
+              onChange={(event) => onDraftChange?.(event.target.value)}
+            />
+          ) : (
+            <div
+              ref={editorRef}
+              className="module__rte-editor"
+              contentEditable
+              suppressContentEditableWarning
+              onInput={(event) => onDraftChange?.(event.currentTarget.innerHTML)}
+              onPaste={handlePaste}
+            />
+          )}
           <div className="module__rte-actions">
             <button
               type="button"

@@ -40,6 +40,7 @@ function enhanceModuleCard(
   onHeadlineDraftCancel: () => void,
   onHeadlineDraftHeadlineTypeChange: (value: 'h1' | 'h2' | 'h3') => void,
   onHeadlineDraftSave: (moduleId: string) => void,
+  editingImageModuleId: string | null,
   editingTextModuleId: string | null,
   textModuleDraft: string,
   onTextDraftChange: (value: string) => void,
@@ -57,6 +58,7 @@ function enhanceModuleCard(
     typeof content.props.className === 'string' ? content.props.className : ''
   const isEditing =
     (module.modulname === 'headline-module' && editingHeadlineModuleId === module._id) ||
+    (module.modulname === 'image-module' && editingImageModuleId === module._id) ||
     (module.modulname === 'text-module' && editingTextModuleId === module._id)
   const isConfiguring = configuringModuleId === module._id
   const nextClassName = `${existingClassName} module__card--interactive${
@@ -220,6 +222,7 @@ function SectionGroup({ index, isAuthenticated, section, admin }: SectionGroupPr
     handleStartEditingModule,
     handleRemoveModule,
     handleSaveHeadlineModule,
+    editingImageModuleId,
     handleSaveTextModule,
     handleSectionModulePointerDragStart,
     isValidDropIndex,
@@ -382,6 +385,7 @@ function SectionGroup({ index, isAuthenticated, section, admin }: SectionGroupPr
                     handleCancelEditingHeadlineModule,
                     setHeadlineModuleTypeDraft,
                     handleSaveHeadlineModule,
+                    editingImageModuleId,
                     editingTextModuleId,
                     textModuleDraft,
                     setTextModuleDraft,

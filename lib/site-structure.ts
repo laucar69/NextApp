@@ -1,4 +1,5 @@
 import HeadlineModuleContent from '@/models/HeadlineModuleContent'
+import ImageModuleContent from '@/models/ImageModuleContent'
 import Page from '@/models/Page'
 import Module from '@/models/Module'
 import Section from '@/models/Section'
@@ -18,7 +19,7 @@ export const DEFAULT_SECTION = {
 }
 
 function getDefaultModuleName(position: number) {
-  return position === 1 ? 'init-module' : 'text-module'
+  return 'text-module'
 }
 
 function parseBootstrapColumns(value: string | null | undefined) {
@@ -43,12 +44,18 @@ async function attachModulesToSections<T extends { _id: unknown; position: numbe
   const textContentIds = modules
     .filter((sectionModule) => sectionModule.modulname === 'text-module' && sectionModule.content_id)
     .map((sectionModule) => sectionModule.content_id)
+  const imageContentIds = modules
+    .filter((sectionModule) => sectionModule.modulname === 'image-module' && sectionModule.content_id)
+    .map((sectionModule) => sectionModule.content_id)
 
   const headlineContents = headlineContentIds.length
     ? await HeadlineModuleContent.find({ _id: { $in: headlineContentIds } }).lean()
     : []
   const textContents = textContentIds.length
     ? await TextModuleContent.find({ _id: { $in: textContentIds } }).lean()
+    : []
+  const imageContents = imageContentIds.length
+    ? await ImageModuleContent.find({ _id: { $in: imageContentIds } }).lean()
     : []
   const headlineContentsById = new Map(
     headlineContents.map((content) => [
@@ -61,6 +68,15 @@ async function attachModulesToSections<T extends { _id: unknown; position: numbe
   )
   const textContentsById = new Map(
     textContents.map((content) => [
+      String(content._id),
+      {
+        ...content,
+        _id: String(content._id),
+      },
+    ])
+  )
+  const imageContentsById = new Map(
+    imageContents.map((content) => [
       String(content._id),
       {
         ...content,
@@ -93,6 +109,8 @@ async function attachModulesToSections<T extends { _id: unknown; position: numbe
           ? headlineContentsById.get(String(sectionModule.content_id)) ?? null
           : sectionModule.modulname === 'text-module' && sectionModule.content_id
             ? textContentsById.get(String(sectionModule.content_id)) ?? null
+          : sectionModule.modulname === 'image-module' && sectionModule.content_id
+            ? imageContentsById.get(String(sectionModule.content_id)) ?? null
           : null,
     })),
   }))
@@ -154,7 +172,7 @@ export async function ensureDefaultSiteStructure() {
 
     await Module.create({
       section_id: createdSection._id,
-      modulname: 'init-module',
+      modulname: 'text-module',
       position: 1,
       bootstrap_width: 'col-md-12',
       bootstrap_offset: '',
@@ -246,6 +264,12 @@ export async function addModuleToSection(sectionId: number, modulname: string) {
       markup: '<p></p>',
     })
     contentId = String(textContent._id)
+  } else if (modulname === 'image-module') {
+    const imageContent = await ImageModuleContent.create({
+      src: '/assets/admin/noimg.jpg',
+      alt: 'Kein Bild ausgewaehlt',
+    })
+    contentId = String(imageContent._id)
   }
 
   await Module.create({
@@ -279,6 +303,10 @@ export async function deleteModule(moduleId: string) {
 
   if (sectionModule.modulname === 'text-module' && sectionModule.content_id) {
     await TextModuleContent.deleteOne({ _id: sectionModule.content_id })
+  }
+
+  if (sectionModule.modulname === 'image-module' && sectionModule.content_id) {
+    await ImageModuleContent.deleteOne({ _id: sectionModule.content_id })
   }
 
   await Module.deleteOne({ _id: sectionModule._id })
@@ -455,6 +483,99 @@ export async function updateTextModuleContent(
   }
 
   return getTextModuleContent(moduleId)
+}
+
+export async function getImageModuleContent(moduleId: string) {
+  const sectionModule = await Module.findById(moduleId).lean()
+
+  if (!sectionModule || sectionModule.modulname !== 'image-module') {
+    throw new Error('Image module was not found.')
+  }
+
+  if (!sectionModule.content_id) {
+    const imageContent = await ImageModuleContent.create({
+      src: '/assets/admin/noimg.jpg',
+      alt: 'Kein Bild ausgewaehlt',
+    })
+
+    await Module.updateOne(
+      { _id: sectionModule._id },
+      {
+        content_id: imageContent._id,
+      }
+    )
+
+    return {
+      _id: String(imageContent._id),
+      src: imageContent.src,
+      alt: imageContent.alt,
+    }
+  }
+
+  const imageContent = await ImageModuleContent.findById(sectionModule.content_id).lean()
+
+  if (!imageContent) {
+    throw new Error('Image module content was not found.')
+  }
+
+  return {
+    _id: String(imageContent._id),
+    src: imageContent.src,
+    alt: imageContent.alt,
+  }
+}
+
+function buildImageAltFromSrc(src: string) {
+  const filename = src.split('/').pop() ?? 'Bild'
+  const withoutExtension = filename.replace(/\.[^.]+$/, '')
+  const normalized = withoutExtension.replace(/[_-]+/g, ' ').trim()
+
+  if (!normalized) {
+    return 'Bild'
+  }
+
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1)
+}
+
+export async function updateImageModuleContent(
+  moduleId: string,
+  input: { src: string }
+) {
+  const sectionModule = await Module.findById(moduleId).lean()
+
+  if (!sectionModule || sectionModule.modulname !== 'image-module') {
+    throw new Error('Image module was not found.')
+  }
+
+  let contentId = sectionModule.content_id
+  const nextSrc = input.src
+  const nextAlt = buildImageAltFromSrc(nextSrc)
+
+  if (!contentId) {
+    const createdContent = await ImageModuleContent.create({
+      src: nextSrc,
+      alt: nextAlt,
+    })
+
+    contentId = createdContent._id
+
+    await Module.updateOne(
+      { _id: sectionModule._id },
+      {
+        content_id: createdContent._id,
+      }
+    )
+  } else {
+    await ImageModuleContent.updateOne(
+      { _id: contentId },
+      {
+        src: nextSrc,
+        alt: nextAlt,
+      }
+    )
+  }
+
+  return getImageModuleContent(moduleId)
 }
 
 export async function updateModuleLayout(

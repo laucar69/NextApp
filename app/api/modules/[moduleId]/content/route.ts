@@ -5,8 +5,10 @@ import { dbConnect } from '@/lib/mongodb'
 import Module from '@/models/Module'
 import {
   getHeadlineModuleContent,
+  getImageModuleContent,
   getTextModuleContent,
   updateHeadlineModuleContent,
+  updateImageModuleContent,
   updateTextModuleContent,
 } from '@/lib/site-structure'
 
@@ -53,6 +55,8 @@ export async function GET(
         ? await getHeadlineModuleContent(moduleId)
         : sectionModule.modulname === 'text-module'
           ? await getTextModuleContent(moduleId)
+          : sectionModule.modulname === 'image-module'
+            ? await getImageModuleContent(moduleId)
           : null
 
     if (!content) {
@@ -123,6 +127,19 @@ export async function PATCH(
 
       content = await updateTextModuleContent(moduleId, {
         markup,
+      })
+    } else if (sectionModule.modulname === 'image-module') {
+      const src = typeof body.src === 'string' ? body.src.trim() : ''
+
+      if (!src.startsWith('/assets/content/images/')) {
+        return NextResponse.json(
+          { ok: false, error: 'Ungueltiger Bildpfad.' },
+          { status: 400 }
+        )
+      }
+
+      content = await updateImageModuleContent(moduleId, {
+        src,
       })
     } else {
       return NextResponse.json(

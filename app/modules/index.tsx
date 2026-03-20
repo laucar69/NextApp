@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { SectionItem, SectionModuleItem } from '../global'
 import { HeadlineModule } from './headline-module'
-import { InitModule } from './init-module'
+import { ImageModule } from './image-module'
 import { TextModule } from './text-module'
 
 export type AvailableModuleItem = {
@@ -39,12 +39,21 @@ const MODULE_REGISTRY: ModuleRenderer[] = [
     },
   },
   {
-    key: 'init-module',
-    name: 'Standard Modul',
+    key: 'image-module',
+    name: 'Image Modul',
     render: (section, moduleId) => {
       const sectionModule = section.modules.find((entry) => entry._id === moduleId)
+      const content =
+        sectionModule?.content && 'src' in sectionModule.content ? sectionModule.content : null
 
-      return <InitModule key={moduleId} className={getModuleGridClassName(sectionModule)} />
+      return (
+        <ImageModule
+          key={moduleId}
+          className={getModuleGridClassName(sectionModule)}
+          src={content?.src ?? '/assets/admin/noimg.jpg'}
+          alt={content?.alt ?? 'Kein Bild ausgewaehlt'}
+        />
+      )
     },
   },
   {
