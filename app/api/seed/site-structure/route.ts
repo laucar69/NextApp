@@ -17,10 +17,12 @@ export async function POST() {
         title: page?.title,
       },
       section: {
+        _id: section?._id,
         id: section?.id,
         page_id: section?.page_id,
         position: section?.position,
         name: section?.name,
+        modules: section?.modules ?? [],
       },
     })
   } catch (error) {
